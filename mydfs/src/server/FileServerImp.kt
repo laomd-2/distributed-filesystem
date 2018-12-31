@@ -39,6 +39,7 @@ class FileServerImp(port: Int, dir: String): FileServer, RpcServer(port) {
 
     override fun write(filename: String, bytes: ByteArray) {
         val file = File(workDir.path, filename)
+        file.deleteOnExit()
         file.writeBytes(bytes)
     }
 }
