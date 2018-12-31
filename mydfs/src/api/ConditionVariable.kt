@@ -2,7 +2,6 @@ package api
 
 import java.util.concurrent.locks.Lock
 
-typealias xid_t = Long
 typealias lockid_t = Int
 enum class StatusCode { OK, RETRY, RPCERR, NOENT, IOERR}
 
