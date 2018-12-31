@@ -27,7 +27,7 @@ class ExtentServerImp(port: Int, dir: String): ExtentServer, RpcServer(port) {
     }
 
     override fun remove(filename: String) {
-        val file = File(filename)
+        val file = File(workDir.path, filename)
         file.delete()
     }
 }
