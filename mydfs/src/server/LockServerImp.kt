@@ -1,21 +1,17 @@
 package server
 
-import java.util.concurrent.locks.Lock
+import api.ConditionVariable
+import api.LockServer
+import api.StatusCode
+import api.lockid_t
+
 import java.util.concurrent.locks.ReentrantLock
 
-class ConditionVariable(lock: Lock) {
-    enum class Status {
-        FREE, LOCKED
-    }
-    var status = Status.FREE
-    val condition = lock.newCondition()!!
-}
-
 class LockServerImp(port: Int) : LockServer, RpcServer(port) {
-    private val lockMap = hashMapOf<Int, ConditionVariable>()
+    private val lockMap = hashMapOf<lockid_t, ConditionVariable>()
     private val mutex = ReentrantLock()
 
-    override fun acquire(lock_id: Int) {
+    override fun acquire(lock_id: lockid_t): StatusCode {
         mutex.lock()
         if (!lockMap.containsKey(lock_id))
             lockMap[lock_id] = ConditionVariable(mutex)
@@ -24,14 +20,21 @@ class LockServerImp(port: Int) : LockServer, RpcServer(port) {
             lock?.condition?.await()
         lock.status = ConditionVariable.Status.LOCKED
         mutex.unlock()
+        return StatusCode.OK
     }
 
-    override fun release(lock_id: Int) {
-        val lock = lockMap[lock_id]
+    override fun release(lock_id: lockid_t): StatusCode {
         mutex.lock()
-        lock?.status = ConditionVariable.Status.FREE
-        lock?.condition?.signal()
-        mutex.unlock()
+        val lock = lockMap.getOrDefault(lock_id, null)
+        return if (lock == null) {
+            mutex.unlock()
+            StatusCode.IOERR
+        } else {
+            lock.status = ConditionVariable.Status.FREE
+            lock.condition.signal()
+            mutex.unlock()
+            StatusCode.OK
+        }
     }
 }
 
