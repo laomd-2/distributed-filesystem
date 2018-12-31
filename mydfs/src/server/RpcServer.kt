@@ -5,8 +5,8 @@ import java.rmi.registry.LocateRegistry
 import java.rmi.server.UnicastRemoteObject
 
 abstract class RpcServer(private val port: Int) : UnicastRemoteObject(port) {
-    fun start(dir: String) {
+    fun start(root: String) {
         LocateRegistry.createRegistry(port)
-        Naming.bind("rmi://127.0.0.1:$port/$dir", this)
+        Naming.bind("rmi://127.0.0.1:$port/$root", this)
     }
 }
