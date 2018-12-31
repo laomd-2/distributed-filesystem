@@ -1,7 +1,7 @@
 package client
 
-import server.FileServer
-import server.LockServer
+import api.FileServer
+import api.LockServer
 import java.io.File
 import java.lang.Exception
 import java.rmi.Naming
