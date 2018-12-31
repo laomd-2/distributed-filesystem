@@ -4,6 +4,7 @@ import server.FileServer
 import server.LockServer
 import java.rmi.Naming
 import kotlin.concurrent.thread
+import kotlin.random.Random
 
 fun main(args: Array<String>) {
     val lock = Naming.lookup("rmi://127.0.0.1:12000/hello") as LockServer
@@ -11,29 +12,20 @@ fun main(args: Array<String>) {
 
     val threads = arrayListOf<Thread>()
 
-    for (i in 0..4) {
+    for (i in 0..10) {
         threads.add(thread(start = false) {
-            lock.acquire(0)
-            fileServer.write("file1.txt", "llalala".toByteArray())
-            lock.release(0)
+            val rand = Random(System.currentTimeMillis())
+            val write = rand.nextInt(11)
+            lock.acquire(write)
+            fileServer.write("file$write.txt", "this is a file written by $i".toByteArray())
+            lock.release(write)
+            println("$i write $write")
 
-            Thread.sleep(2000)
-
-            lock.acquire(1)
-            println(String(fileServer.read("file2.txt")))
-            lock.release(1)
-        })
-
-        threads.add(thread(start = false) {
-            lock.acquire(1)
-            fileServer.write("file2.txt", "hahaha".toByteArray())
-            lock.release(1)
-
-            Thread.sleep(2000)
-
-            lock.acquire(0)
-            println(String(fileServer.read("file1.txt")))
-            lock.release(0)
+            val read = rand.nextInt(11)
+            lock.acquire(read)
+            val res = String(fileServer.read("file$read.txt"))
+            lock.release(read)
+            println("$i read $read, $res")
         })
     }
 
