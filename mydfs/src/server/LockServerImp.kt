@@ -40,6 +40,6 @@ class LockServerImp(port: Int) : LockServer, RpcServer(port) {
 
 fun main(args: Array<String>) {
     val s = LockServerImp(12000)
-    s.start("hello")
+    s.start("lockserver")
     readLine()
 }
